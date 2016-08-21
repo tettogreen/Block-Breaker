@@ -37,7 +37,7 @@ public class Ball : MonoBehaviour {
 
 			//Wait for launch
 			if (Input.GetMouseButtonDown (0)) {
-				rg.velocity = new Vector2 (0.1f, velocity);
+				rg.velocity = new Vector2 (0f, velocity);
 				isLaunched = true;
 			}
 		} else {
@@ -48,26 +48,27 @@ public class Ball : MonoBehaviour {
 
 	}
 
-	void OnCollisionEnter2D(Collision2D collision)
+	void OnCollisionEnter2D (Collision2D collision)
 	{
-		//Play explosion sound (if appropriate time offset passed since the start of the previous playback)
-		if (Time.time - previousAudioStartTime >= minPlaybackOffset) 
-		{
+		//Play hit sound (if appropriate time offset passed since the start of the previous playback)
+		if (Time.time - previousAudioStartTime >= minPlaybackOffset) {
 			previousAudioStartTime = Time.time;
-			//AudioSource.PlayClipAtPoint (GetComponent<AudioSource> ().clip, transform.position, 0.5f);
-			GetComponent<AudioSource> ().Play();
+			GetComponent<AudioSource> ().Play ();
 		}
-
-				//Debug.Log ("Collision enter");
+		//Reset stuck values if ball collides Paddle
+		if (collision.gameObject.GetComponent<Paddle>() != null) {
+			wasStuckX = false;
+			wasStuckY = false;
+		}	
 	}
 
 	//Releases the ball if it has been stuck in Y coordinates for more than 5 seconds
 	void CheckStuck (float currentCoord, ref float previousBallCoord, ref bool wasStuck, ref float lastStuckTime)
 	{
 		//Checks if ball is stuck in Y coordinates.
-		bool isStuck = (Mathf.Abs (previousBallCoord - currentCoord) < 0.0005f); //< 1f && stuckInYTime - Time.time > 5f);
+		bool isStuck = (Mathf.Abs (previousBallCoord - currentCoord) < 0.0005f);
 		if (!isStuck) {
-			wasStuck = false;
+			wasStuck = false;			//is also set to 'false' in OnCollision2D()
 		} else if (!wasStuck) {
 			lastStuckTime = Time.time;
 			wasStuck = true;
